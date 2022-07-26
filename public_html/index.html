@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>SVG fucking rectifier</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+        <style>
+            body {
+                margin-left: 25px;
+                margin-right: 25px;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>SVG fucking rectifier for Canvas & Elementor</h1>
+        <p>Add the fucking "elementor-shape-fill" class on all path if it's not already here</p>
+        <br>
+        <div>
+            <label for="files">Select SVG files:</label>
+            <input type="file" id="files-input" accept="image/svg" name="files" multiple><br>
+            <input id="transform-files" type="button" value="Charger">
+            <input id="download-files" type="button" value="Télecharger tout">
+        </div>
+        <br>
+        <div id="output"></div>
+
+        <script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+        <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+        <script>
+            $(document).ready(function () {
+                $("#transform-files").click(function () {
+
+                    //clear output
+                    $('#output').html("");
+
+                    var input = document.getElementById('files-input');
+
+                    if (typeof window.FileReader !== 'function')
+                        throw ("The file API isn't supported on this browser.");
+                    if (!input)
+                        throw ("The browser does not properly implement the event object");
+                    if (!input.files)
+                        throw ("This browser does not support the `files` property of the file input.");
+                    if (!input.files[0])
+                        return undefined;
+                    if (input.files.length > 1) { // multiple files
+                        for (var i = 0; i < input.files.length; i++) {
+                            readText(input.files[i]);
+                        }
+                    } else { //only one file
+                        readText(input.files[0]);
+                    }
+                });
+
+                $("#download-files").click(function () {
+                    var svgs = document.getElementById("output").childNodes;
+                    for (var i = 0; i < svgs.length; i++) {
+                        console.log(svgs[i].childNodes);
+                        var name = "null.svg";
+                        var svg = "NOPE";
+                        if (svgs[i].childNodes.length === 4) {
+                            svg = svgs[i].childNodes[0].innerHTML;
+                            name = svgs[i].childNodes[1].innerHTML;
+                        }
+                        console.log(name);
+                        console.log(svg);
+                        
+                        //create the download
+                        var a = document.createElement('a');
+                        var blob = new Blob([svg], {'type': 'application/octet-stream'});
+                        a.href = window.URL.createObjectURL(blob);
+                        a.download = name;
+                        a.click();
+                    }
+                });
+            });
+
+            async function readText(file) {
+                const text = await file.text();
+
+                var file_view = document.createElement("div");
+                file_view.classList.add("file");
+
+                var file_svg = document.createElement("div");
+                file_svg.style = "width: 150px;";
+                file_svg.innerHTML = text;
+
+                var paths = file_svg.getElementsByTagName("path");
+                console.log(file.name);
+                console.log(paths);
+                for (var i = 0; i < paths.length; i++) {
+                    //readText(paths[i]);
+                    if (paths[i].classList.contains("elementor-shape-fill")) {
+                        console.log("class found");
+                    } else {
+                        console.log("class NOT found, rectifying !!!!!");
+                        paths[i].classList.add("elementor-shape-fill")
+                    }
+                }
+
+                var file_name = document.createElement("span");
+                file_name.innerText = file.name;
+                var file_text = document.createElement("pre");
+                file_text.style = "white-space: pre-wrap;";
+                file_text.innerText = file_svg.innerHTML;
+                var download_btn = document.createElement("input");
+                download_btn.type = "button";
+                download_btn.value = "download";
+                file_view.appendChild(file_svg);
+                file_view.appendChild(file_name);
+                //file_view.appendChild(download_btn);
+                file_view.appendChild(file_text);
+                document.getElementById("output").appendChild(file_view);
+            }
+
+        </script>
+    </body>
+</html>
